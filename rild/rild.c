@@ -46,7 +46,11 @@ static void usage(const char *argv0)
     exit(EXIT_FAILURE);
 }
 
-#ifdef QCOM_HARDWARE
+#if defined(QCOM_HARDWARE) && !defined(ENABLE_MULTIPLE_CLIENTS)
+#define ENABLE_MULTIPLE_CLIENTS
+#endif
+
+#ifdef ENABLE_MULTIPLE_CLIENTS
 extern char rild[MAX_SOCKET_NAME_LENGTH] __attribute__((weak));
 #endif
 
@@ -166,7 +170,7 @@ int main(int argc, char **argv)
         }
     }
 
-#ifdef QCOM_HARDWARE
+#ifdef ENABLE_MULTIPLE_CLIENTS
     if (clientId == NULL) {
         clientId = "0";
     } else if (atoi(clientId) > MAX_RILDS) {
@@ -328,7 +332,7 @@ OpenLib:
         argc = make_argv(args, rilArgv);
     }
 
-#ifdef QCOM_HARDWARE
+#ifdef ENABLE_MULTIPLE_CLIENTS
     rilArgv[argc++] = "-c";
     rilArgv[argc++] = clientId;
     RLOGD("RIL_Init argc = %d clientId = %s", argc, rilArgv[argc-1]);
@@ -340,7 +344,7 @@ OpenLib:
     funcs = rilInit(&s_rilEnv, argc, rilArgv);
     RLOGD("RIL_Init rilInit completed");
 
-#ifdef QCOM_HARDWARE
+#ifdef ENABLE_MULTIPLE_CLIENTS
     if (funcs == NULL) {
         /* Pre-multi-client qualcomm vendor libraries won't support "-c" either, so
          * try again without it. This should only happen on ancient qcoms, so raise
